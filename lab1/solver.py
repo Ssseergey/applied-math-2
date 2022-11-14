@@ -1,6 +1,3 @@
-from tracemalloc import start
-
-
 class Solver:
     def __init__(self, A, b, type, start_basis=None):
         self.A = A
@@ -19,18 +16,24 @@ class Solver:
                 for j in range(len(self.A - 1)):
                     if self.A[i][j] != 0 and j not in self.basis:
                         self.basis.append(j)
-                        print("i, j I AM BASIS NOW", self.basis)
                         rows.append(i)
                         self.makeSolveElementPossibleBasis(j, i)
                         break
 
             self.used_basises.append(self.basis.copy())
         else:
-            print("IMPLEMENT ME")
+            rows = []
+            self.basis = self.start_basis
+            for i in range(len(self.b) - 1):
+                for j in range(len(self.A - 1)):
+                    if self.A[i][j] != 0 and j not in self.basis and j in self.start_basis:
+                        rows.append(i)
+                        self.makeSolveElementPossibleBasis(j, i)
+                        break
+
+            self.used_basises.append(self.basis.copy())
 
         while(self.iteration == 0 or not optimal):
-            print("basis:", self.basis)
-            print("used_basises", self.used_basises)
             self.iteration += 1
             optimal = self._step()
 
@@ -40,21 +43,16 @@ class Solver:
                 if self.A[i][item] != 0:
                     self.values_for_basis[str(item)] = self.b[i]
 
-        print(self.A)
-        print(self.b)
         print("basis_values:", self.values_for_basis)
         print("function value = ", self.function())
         return self.function()
 
     def _step(self):
-        print(self.A)
-        print(self.b)
+        print("basis = ", self.basis)
         optimal, column = self.isOptimalBasis()
         if optimal:
             return optimal
-
         row = self.divideBOnColumn(column)
-        print("col, row = ", column, row)
         temp = self.basis.copy()
         temp[row] = column
         if temp not in self.used_basises:
@@ -93,7 +91,6 @@ class Solver:
                 value = -1
             else:
                 value = self.b[i] / self.A[i][column]
-
             if value >= 0 and (min_item == None or value < min_item):
                 min_item = value
                 row = i
@@ -109,25 +106,15 @@ class Solver:
                 multiplier = self.A[i][column]
                 self.A[i] -= self.A[row] * multiplier
                 self.b[i] -= self.b[row] * multiplier
-            # if self.b[i] < 0:
-            #     self.b[i] *= -1
-            #     self.A[i] *= -1
 
     def countDelta(self):
         self.delta = []
-        for i in range(len(self.A[-1])):
+        for i in range(len(self.A[0])):
             sum = 0
             for j in range(len(self.basis)):
                 sum += self.A[-1][self.basis[j]] * self.A[j][i]
             sum -= self.A[-1][i]
             self.delta.append(sum)
-
-        sum = 0
-        for j in range(len(self.basis)):
-            sum += self.A[-1][self.basis[j]] * self.b[j]
-        sum -= self.b[-1]
-        self.delta.append(sum)
-        print("DELTAS =", self.delta)
 
     def function(self):
         sum = 0
