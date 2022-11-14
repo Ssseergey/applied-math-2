@@ -1,75 +1,63 @@
 import numpy as np
 
 class Solver:
-    def __init__(self, A, b, max_x, max_var):
+    def __init__(self, A, b):
         self.A = A
         self.b = b
-        self.max_x = max_x
-        self.max_var = max_var
         self.used_basises = []
         self.iteration = 0
+        self.basis = []
 
     def solve(self):
-        basis = []
-        while(self.iteration == 0 or not optimal):
-            basis, optimal = self._step()
-            self.iteration += 1
-            print("basis:", basis)
+        self.basis = [i for i in range(len(self.b) - 1)]
+        rows = [i for i in range(len(self.b) - 1)]
+        columns = rows.copy()
+        self.findFirstBasis(rows, columns)
+        self.used_basises.append(self.basis.copy())
 
-        values_for_basis = []
-        for item in basis:
-            for i in range(len(self.A)):
-                if self.A[i][item-1] != 0:
-                    values_for_basis.append(self.b[i])
-        print("basis_values:", values_for_basis)
-        print("count values for x by hands")
+        while(self.iteration == 0 or not optimal):
+            print("basis:", self.basis)
+            print("used_basises", self.used_basises)
+            self.iteration += 1
+            optimal = self._step()
+
+        self.values_for_basis = {}
+        for item in self.basis:
+            for i in range(len(self.A) - 1):
+                if self.A[i][item] != 0:
+                    self.values_for_basis[str(item)] = self.b[i]
+
+        print(self.A)
+        print(self.b)
+        print("basis_values:", self.values_for_basis)
+        print("function value = ", self.function())
 
     def _step(self):
-        basis = self.chooseBasis()
         optimal, column = self.isOptimalBasis()
         if optimal:
-            return basis, optimal
+            return optimal
+
         row = self.divideBOnColumn(column)
-        self.makeSolveElementPossibleBasis(column, row)
-        return basis, False
-
-    def chooseBasis(self):
-        if self.used_basises == []:
-            basis = []
-            for i in range(self.max_x + 1, self.max_var + 1):
-                basis.append(i)
-            self.used_basises.append(basis)
-            return basis
+        temp = self.basis.copy()
+        temp[row] = column
+        if temp not in self.used_basises:
+            self.basis[row] = column
+            self.used_basises.append(self.basis.copy())
         else:
-            possible_basises = []
-            element = 0
-            for i in range(len(self.A[0])):
-                good = True
-                count = 0
-                for j in range(len(self.A)):
-                    if self.A[j][i] != 0:
-                        good = False
-                        element = self.A[j][i]
-                        count += 1
-                if count != 1:
-                    good = False
-                if good:
-                    for j in range(len(self.A)):
-                        self.A[j][i] /= element
-                        self.b[i] /= element
-                    possible_basises.append(i)
+            return True
 
-            if len(possible_basises) == self.max_var - self.max_x and possible_basises not in self.used_basises:
-                self.used_basises.append(possible_basises)
-                return possible_basises
-            return possible_basises
+        self.makeSolveElementPossibleBasis(column, row)
+        return False
+
+    def findFirstBasis(self, rows, columns):
+        for j in range(len(rows)):
+            self.makeSolveElementPossibleBasis(columns[j], rows[j])
 
     def isOptimalBasis(self):
         min_item = self.A[-1][0]
-        column = -1
+        column = 0
         for i, item in enumerate(self.A[-1]):
-            min_item = min(min_item, item)
-            if min_item > item:
+            if item < min_item:
                 min_item = item
                 column = i
         return min_item >= 0, column
@@ -94,7 +82,17 @@ class Solver:
         if element != 1:
             self.A[row] /= element
             self.b[row] /= element
-        for i in range(len(self.A)):
+        for i in range(len(self.A) - 1):
             if i != row:
-                self.A[i] -= self.A[row] * self.A[i][column]
-                self.b[i] -= self.b[row] * self.A[i][column]
+                multiplier = self.A[i][column]
+                self.A[i] -= self.A[row] * multiplier
+                self.b[i] -= self.b[row] * multiplier
+
+    def function(self):
+        sum = 0
+        for i in range(len(self.A[-1])):
+            try:
+                sum -= self.A[-1][i] * self.values_for_basis[str(i)]
+            except:
+                pass
+        return sum

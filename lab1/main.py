@@ -2,8 +2,8 @@ import datalib as dl
 import solver
 
 data = dl.PrepareData()
-data.readTest("tests/example")
+data.readTest("tests/test1")
 data.print()
 
-worker = solver.Solver(data.A, data.b, data.max_x, data.max_var)
+worker = solver.Solver(data.A, data.b)
 worker.solve()

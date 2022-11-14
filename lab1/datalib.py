@@ -120,11 +120,11 @@ class PrepareData:
                 pass
             line.append(value)
         A.append(line)
-        return np.array(A)
+        return np.array(A, dtype=np.float64)
 
     def createB(self):
         b = []
         for item in self.equations:
             b.append(item[1])
         b.append(0)
-        return np.array(b)
+        return np.array(b, dtype=np.float64)
