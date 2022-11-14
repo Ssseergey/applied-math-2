@@ -26,7 +26,7 @@ class PrepareData:
         function_variables_with_coeff = function.split(' ')[2:]
         parsed = self.parseCoeffsAndNumbers(function_variables_with_coeff)
         for key, value in parsed.items():
-            parsed[key] = -int(value)
+            parsed[key] = int(value)
         return parsed
 
     def parseCoeffsAndNumbers(self, line):
@@ -68,7 +68,13 @@ class PrepareData:
 
     def convertToCanonical(self, parsed, b, type):
         if type == '=':
+            if b < 0:
+                # print(parsed)
+                b = -b
+                for key, value in parsed.items():
+                    parsed[key] = -value
             return parsed, b
+
         parsed['x' + str(self.max_var + 1)] = -1 if type == '>=' else 1
         if b < 0:
             b = -b
