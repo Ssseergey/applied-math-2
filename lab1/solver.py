@@ -1,5 +1,5 @@
 class Solver:
-    def __init__(self, A, b, type, start_basis=None):
+    def __init__(self, A, b, type, max_x, max_var, start_basis=None):
         self.A = A
         self.b = b
         self.used_basises = []
@@ -8,24 +8,39 @@ class Solver:
         self.type = type
         self.delta = []
         self.start_basis = start_basis
+        self.max_x = max_x
+        self.max_var = max_var
 
     def solve(self):
         if self.start_basis == None:
             rows = []
-            for i in range(len(self.b) - 1):
-                for j in range(len(self.A - 1)):
-                    if self.A[i][j] != 0 and j not in self.basis:
-                        self.basis.append(j)
-                        rows.append(i)
-                        self.makeSolveElementPossibleBasis(j, i)
-                        break
+            if self.max_var - self.max_x >= len(self.b) - 1:
+                self.start_basis = []
+                for i in range(self.max_x, self.max_x + min(self.max_var - self.max_x, len(self.b) -1)):
+                    self.start_basis.append(i)
+
+                for i in range(len(self.b) - 1):
+                    for j in range(len(self.A) - 1):
+                        if self.A[i][j] != 0 and j not in self.basis and j in self.start_basis:
+                            rows.append(i)
+                            self.makeSolveElementPossibleBasis(j, i)
+                            break
+                self.basis = self.start_basis
+            else:
+                for i in range(len(self.b) - 1):
+                    for j in range(len(self.A) - 1):
+                        if self.A[i][j] != 0 and j not in self.basis:
+                            self.basis.append(j)
+                            rows.append(i)
+                            self.makeSolveElementPossibleBasis(j, i)
+                            break
 
             self.used_basises.append(self.basis.copy())
         else:
             rows = []
             self.basis = self.start_basis
             for i in range(len(self.b) - 1):
-                for j in range(len(self.A - 1)):
+                for j in range(len(self.A) - 1):
                     if self.A[i][j] != 0 and j not in self.basis and j in self.start_basis:
                         rows.append(i)
                         self.makeSolveElementPossibleBasis(j, i)
@@ -106,6 +121,7 @@ class Solver:
                 multiplier = self.A[i][column]
                 self.A[i] -= self.A[row] * multiplier
                 self.b[i] -= self.b[row] * multiplier
+        # print(self.A)
 
     def countDelta(self):
         self.delta = []
@@ -115,6 +131,7 @@ class Solver:
                 sum += self.A[-1][self.basis[j]] * self.A[j][i]
             sum -= self.A[-1][i]
             self.delta.append(sum)
+        # print(self.delta)
 
     def function(self):
         sum = 0

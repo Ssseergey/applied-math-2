@@ -4,9 +4,9 @@ from colorama import Fore, Style
 
 data = dl.PrepareData()
 
-# "example":-13,
 
 tests = {
+    "example":-13,
     "test1": -6.5,
     "test2": -6,
     "test3": -11,
@@ -18,7 +18,7 @@ tests = {
 
 for test, value in tests.items():
     data.readTest("tests/" + test)
-    worker = solver.Solver(data.A, data.b, data.type)
+    worker = solver.Solver(data.A, data.b, data.type, data.max_x, data.max_var)
     result = worker.solve()
     if round(result, 2) == value:
         print(Fore.GREEN + test + " Passed!")
