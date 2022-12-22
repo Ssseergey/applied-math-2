@@ -73,20 +73,3 @@ for test, value in matrix_tests.items():
     else:
         print(Fore.RED + test + " Failed!")
     print(Style.RESET_ALL)
-
-
-# A = [
-#     [1, -1, -1],
-#     [-1, -1, 3],
-#     [-1, 2, -1]
-# ]
-
-# P = [6/13, 3/13, 4/13]
-# Q = [6/13, 4/13, 3/13]
-
-
-# sum = 0
-# for i in range(len(A)):
-#     for j in range(len(A[0])):
-#         sum += P[i] * Q[j] * A[i][j]
-# print(sum)
